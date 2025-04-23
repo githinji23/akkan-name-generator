@@ -1,36 +1,50 @@
-// JavaScript code
-function getAkanName() {
+// Akan Name Generator Script
+
+document.getElementById("akanForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
     // Get user input
-    const day = parseInt(document.getElementById("day").value);
-    const month = parseInt(document.getElementById("month").value);
-    const year = document.getElementById("year").value;
-    const gender = document.querySelector('input[name="gender"]:checked');
+    const birthdate = document.getElementById("birthdate").value;
+    const gender = document.querySelector('input[name="gender"]:checked')?.value;
 
     // Validate input
-    if (day < 1 || day > 31) {
-        alert("Day must be between 1 and 31.");
+    if (!birthdate || !gender) {
+        alert("Please fill in all fields.");
         return;
     }
-    if (month < 1 || month > 12) {
-        alert("Month must be between 1 and 12.");
-        return;
-    }
-    if (!gender) {
-        alert("Please select a gender.");
-        return;
-    }
+
+    // Extract day, month, and year from the birthdate
+    const [year, month, day] = birthdate.split("-").map(Number);
 
     // Calculate the day of the week
-    const CC = parseInt(year.slice(0, 2)); // First two digits of the year
-    const YY = parseInt(year.slice(2)); // Last two digits of the year
-    const d = ((Math.floor(4 * CC - 2 * CC - 1) + Math.floor(5 * YY) +
-        Math.floor(26 * (month + 1) / 10) + day) % 7);
+    const dayIndex = calculateDayOfWeek(day, month, year);
 
-    // Map day of the week to Akan names
+    // Get the Akan name
+    const akanName = getAkanName(dayIndex, gender);
+
+    // Display the result
+    document.getElementById("result").textContent = `Your Akan name is: ${akanName}`;
+});
+
+// Function to calculate the day of the week using Zeller's Congruence
+function calculateDayOfWeek(day, month, year) {
+    let adjustedMonth = month;
+    let adjustedYear = year;
+    if (month < 3) {
+        adjustedMonth += 12;
+        adjustedYear -= 1;
+    }
+    const q = day;
+    const m = adjustedMonth;
+    const K = adjustedYear % 100; // Year of the century
+    const J = Math.floor(adjustedYear / 100); // Zero-based century
+    const d = (q + Math.floor((13 * (m + 1)) / 5) + K + Math.floor(K / 4) + Math.floor(J / 4) - 2 * J) % 7;
+    return (d + 7) % 7; // Ensure positive index
+}
+
+// Function to get the Akan name based on gender and day index
+function getAkanName(dayIndex, gender) {
     const maleAkanNames = ["Kwasi", "Kwadwo", "Kwabena", "Kwaku", "Yaw", "Kofi", "Kwame"];
     const femaleAkanNames = ["Akosua", "Adwoa", "Abenaa", "Akua", "Yaa", "Afua", "Ama"];
-    const akanName = gender.value === "male" ? maleAkanNames[d] : femaleAkanNames[d];
-
-    // Display result
-    document.getElementById("result").textContent = `Your Akan name is: ${akanName}`;
+    return gender === "male" ? maleAkanNames[dayIndex] : femaleAkanNames[dayIndex];
 }
